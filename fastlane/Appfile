@@ -1,0 +1,18 @@
+#  Team Identifiers
+# itc_team_id '13631800'
+# team_id '2KTRLRN29H'
+
+team_id '4YFW2PR745'
+itc_team_id '26150800'
+
+for_lane :app_store do
+  app_identifier 'com.therichardnguyen.Handoff'
+end
+
+for_lane :demo do
+  app_identifier 'com.medisas.HandoffDemo'
+end
+
+for_lane :play do
+  app_identifier 'com.medisas.HandoffPlay'
+end

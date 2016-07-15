@@ -1,0 +1,180 @@
+fastlane_version '1.89.0'
+PROVISIONING_PROFILE_PATH = './fastlane/profiles'
+PLIST_PATH = 'Handoff/Info.plist'
+default_platform :ios
+
+platform :ios do
+
+  after_all do
+
+  end
+
+  before_all do
+    set_up_lane
+  end
+
+  def apply_icon_mask_with_color(color)
+    shield = "Environment-#{lane_context[SharedValues::LANE_NAME].split(' ').last}-#{color}"
+    UI.command_output(shield)
+    badge(shield: shield, dark: true, shield_no_resize: true)
+  end
+
+  def load_keys
+    begin
+      import('keys')
+    rescue => exception
+      UI.error('\'fastlane/keys\' file not found. To use this Fastfile:')
+      UI.error(' • $ cp fastlane/keys.template fastlane/keys')
+      UI.error(' • Fill in the values')
+      raise exception
+    end
+  end
+
+  def current_version_number
+    get_info_plist_value(
+      path: PLIST_PATH,
+      key: 'CFBundleShortVersionString'
+    )
+  end
+
+  def current_build_number
+    get_build_number
+  end
+
+  def set_up_lane
+    load_keys
+    ENV['FASTLANE_ITC_TEAM_ID'] = CredentialsManager::AppfileConfig.try_fetch_value(:itc_team_id)
+  end
+
+  def set_app_identifier
+    app_identifier = CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier)
+    UI.command_output(app_identifier)
+    update_app_identifier(
+      xcodeproj: 'Handoff.xcodeproj',
+      plist_path: PLIST_PATH,
+      app_identifier: app_identifier
+    )
+    UI.command_output(app_identifier)
+  end
+
+  def unapply_icon_mask
+    reset_git_repo(
+      force: true,
+      files: ['./Handoff/Images.xcassets/AppIcon.appiconset']
+    )
+  end
+
+  def reset_xcodeproj
+    reset_git_repo(
+      force: true,
+      files: ['Handoff.xcodeproj/project.pbxproj']
+    )
+  end
+
+  def testflight_delivery(**options)
+    raise "Need a color set for TestFlight builds." unless options[:color]
+    raise "version_number required." unless options[:version_number]
+
+    # Update the project info
+    version_number = options[:version_number]
+    bump_version(version_number: version_number)
+    set_app_identifier
+    apply_icon_mask_with_color(options[:color])
+
+    # Build the app
+    build_app
+
+    # Upload to TestFlight and deliver to internal testers
+    # pilot
+
+    # Reset the things that changed in this lane
+    unapply_icon_mask
+    reset_xcodeproj
+  end
+
+  desc 'Build and sign the Medisas app'
+  desc ''
+  desc 'This will do the following: '
+  desc ' • Set the appropriate bundle identifier'
+  desc ' • Make sure the provisioning profiles are up to date and download the latest one'
+  desc ' • Bump the build number for the app version'
+  desc ' • Build and sign the app'
+  desc ''
+  desc 'This will **not** get the necessary signing certificates. Acquire these from a Medisas engineer.'
+  def build_app(**options)
+    app_identifier = CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier)
+
+    # Get the provisioning profiles
+    sigh(
+      output_path: PROVISIONING_PROFILE_PATH,
+      app_identifier: app_identifier
+    )
+
+    # Build the project
+    gym(
+      scheme: 'Development',
+      silent: true
+    )
+  end
+
+  def bump_version(**options)
+    raise "version_number required." unless options[:version_number]
+
+    # Set the build version
+    version_number = options[:version_number]
+    UI.command_output(version_number)
+    increment_version_number(version_number: version_number)
+
+    # Set the build number
+    build_number = options[:build_number] || current_build_number
+    increment_build_number
+
+    # Commit the version
+    commit_version_bump
+  end
+
+  desc 'Submit a new build to the App Store'
+  desc ''
+  desc 'Arguments:'
+  desc ' • version_number - The version number that you\'d like to use for this build'
+  lane :app_store do |options|
+
+    # Update the project info
+    bump_version(options)
+    set_app_identifier
+
+    # Build the App
+    build_app
+
+    # Upload the app
+    deliver(
+      skip_screenshots: true,
+      skip_metadata: true,
+      force: true
+    )
+    #
+    # # Reset the things that changed for Fastlane
+    reset_xcodeproj
+  end
+
+  desc 'Submit a new Demo build to \'s TestFlight'
+  desc ''
+  desc 'Arguments:'
+  desc ' • version_number - The version number that you\'d like to use for this build'
+  lane :demo do |options|
+    options[:color] = 'blue'
+    testflight_delivery(options)
+  end
+
+  desc 'Submit a new Play build to \'s TestFlight'
+  desc ''
+  desc 'Arguments:'
+  desc ' • version_number - The version number that you\'d like to use for this build'
+  lane :play do |options|
+    testflight_delivery(
+      color: 'orange',
+      version_number: options[:version_number],
+    )
+  end
+
+end
