@@ -71,6 +71,14 @@ platform :ios do
     )
   end
 
+  def prompt_for_version_number
+    current_version_number = get_version_number
+    prompt(
+      text: "What version should this build be? Current is #{current_version_number}",
+      ci_input: current_version_number
+    )
+  end
+
   def testflight_delivery(**options)
     raise "Need a color set for TestFlight builds." unless options[:color]
     raise "version_number required." unless options[:version_number]
@@ -87,9 +95,7 @@ platform :ios do
     build_app
 
     # Upload to TestFlight and deliver to internal testers
-    # pilot
-
-
+    pilot
   end
 
   desc 'Build and sign the Medisas app'
@@ -141,7 +147,11 @@ platform :ios do
   desc ' • version_number - The version number that you\'d like to use for this build'
   lane :app_store do |options|
 
+    # Make sure that the repository is clean
     ensure_git_status_clean
+
+    # Ask for the version number for this submission
+    options[:version_number] = prompt_for_version_number unless options[:version_number]
 
     # Update the project info
     bump_version(options)
