@@ -127,14 +127,16 @@ platform :ios do
     # Set the build version
     version_number = options[:version_number]
     UI.command_output(version_number)
-    increment_version_number(version_number: version_number)
+    new_version_number = increment_version_number(version_number: version_number)
 
     # Set the build number
     build_number = options[:build_number] || current_build_number
-    increment_build_number
+    new_build_number = increment_build_number
 
     # Commit the version
-    commit_version_bump
+    commit_version_bump(
+      message: "Version bump to #{new_version_number} (#{new_build_number})"
+    )
   end
 
   desc 'Submit a new build to the App Store'
