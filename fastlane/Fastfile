@@ -81,9 +81,11 @@ platform :ios do
 
   def testflight_delivery(**options)
     raise "Need a color set for TestFlight builds." unless options[:color]
-    raise "version_number required." unless options[:version_number]
 
     ensure_git_status_clean
+
+    # Ask for the version number for this submission
+    options[:version_number] = prompt_for_version_number unless options[:version_number]
 
     # Update the project info
     version_number = options[:version_number]
