@@ -75,6 +75,12 @@ platform :ios do
     raise "Need a color set for TestFlight builds." unless options[:color]
     raise "version_number required." unless options[:version_number]
 
+    # Make sure *.xcodeproj is in a clean state
+    reset_xcodeproj
+
+    # Reset the app icon before proceeding
+    unapply_icon_mask
+
     # Update the project info
     version_number = options[:version_number]
     bump_version(version_number: version_number)
@@ -87,9 +93,7 @@ platform :ios do
     # Upload to TestFlight and deliver to internal testers
     # pilot
 
-    # Reset the things that changed in this lane
-    unapply_icon_mask
-    reset_xcodeproj
+
   end
 
   desc 'Build and sign the Medisas app'
@@ -139,6 +143,12 @@ platform :ios do
   desc ' • version_number - The version number that you\'d like to use for this build'
   lane :app_store do |options|
 
+    # Make sure *.xcodeproj is in a clean state
+    reset_xcodeproj
+
+    # Reset the app icon before proceeding
+    unapply_icon_mask
+
     # Update the project info
     bump_version(options)
     set_app_identifier
@@ -152,9 +162,6 @@ platform :ios do
       skip_metadata: true,
       force: true
     )
-    #
-    # # Reset the things that changed for Fastlane
-    reset_xcodeproj
   end
 
   desc 'Submit a new Demo build to \'s TestFlight'
