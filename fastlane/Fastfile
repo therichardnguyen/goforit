@@ -145,7 +145,6 @@ platform :ios do
     # Add git tag
     UI.command_output(lane_context[SharedValues::LANE_NAME])
     add_git_tag(
-      grouping: lane_context[SharedValues::LANE_NAME].split(' ').last,
       prefix: 'v'
     )
   end
