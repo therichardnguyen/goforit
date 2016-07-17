@@ -150,11 +150,11 @@ platform :ios do
 
     # Create github release
     set_github_release(
-      tag_name: "release",
+      tag_name: "rickandmorty",
       commitish: last_git_commit[:commit_hash],
       is_draft: true,
       is_prerelease: true,
-      name: 'v#{new_version_number}-b#{new_build_number}'
+      name: "v#{new_version_number}-b#{new_build_number}"
     )
   end
 
@@ -175,14 +175,14 @@ platform :ios do
     set_app_identifier
 
     # Build the App
-    build_app
-
-    # Upload the app
-    deliver(
-      skip_screenshots: true,
-      skip_metadata: true,
-      force: true
-    )
+    # build_app
+    #
+    # # Upload the app
+    # deliver(
+    #   skip_screenshots: true,
+    #   skip_metadata: true,
+    #   force: true
+    # )
   end
 
   desc 'Submit a new Demo build to \'s TestFlight'
