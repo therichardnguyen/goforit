@@ -143,9 +143,17 @@ platform :ios do
     )
 
     # Add git tag
-    UI.command_output(lane_context[SharedValues::LANE_NAME])
-    add_git_tag(
-      prefix: 'v#{new_version_number}-#{new_build_number}'
+    # UI.command_output(lane_context[SharedValues::LANE_NAME])
+    # add_git_tag(
+    #   tag: 'v#{new_version_number}-b#{new_build_number}'
+    # )
+
+    # Create github release
+    set_github_release(
+      commitish: latest_git_commit,
+      is_draft: true,
+      is_prerelease: true,
+      name: 'v#{new_version_number}-b#{new_build_number}'
     )
   end
 
