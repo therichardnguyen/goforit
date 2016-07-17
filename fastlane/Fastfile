@@ -155,6 +155,7 @@ platform :ios do
     name: "Super New actions",
     tag_name: "v1.22.0",
     commitish: git_branch,
+    description: ""
     )
   end
 
