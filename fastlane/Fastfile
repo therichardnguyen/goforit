@@ -149,10 +149,7 @@ platform :ios do
     # )
 
     # Create github release
-    set_github_release(
-      commitish: git_branch(),
-      name: "v#{new_version_number}-b#{new_build_number}"
-    )
+    set_github_release
   end
 
   desc 'Submit a new build to the App Store'
