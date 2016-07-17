@@ -150,7 +150,7 @@ platform :ios do
 
     # Create github release
     set_github_release(
-      commitish: 'master',
+      commitish: git_branch(),
       name: "v#{new_version_number}-b#{new_build_number}"
     )
   end
