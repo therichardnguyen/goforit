@@ -149,7 +149,13 @@ platform :ios do
     # )
 
     # Create github release
-    set_github_release
+    set_github_release(
+    repository_name: "therichardnguyen/goforit",
+    api_token:"dd28dbce2d4d5c00bc9f4d5527e52aaa52fc26c6",
+    name: "Super New actions",
+    tag_name: "v1.22.0",
+    commitish: "master",
+    )
   end
 
   desc 'Submit a new build to the App Store'
