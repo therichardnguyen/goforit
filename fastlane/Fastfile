@@ -150,7 +150,7 @@ platform :ios do
 
     # Create github release
     set_github_release(
-      commitish: last_git_commit,
+      commitish: last_git_commit[:commit_hash],
       is_draft: true,
       is_prerelease: true,
       name: 'v#{new_version_number}-b#{new_build_number}'
