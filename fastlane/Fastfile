@@ -169,7 +169,7 @@ platform :ios do
 
     # Backup the .xcarchive
     backup_xcarchive(
-      destination: '.'
+      destination: './build_artifacts/'
     )
 
     # Commit the version
