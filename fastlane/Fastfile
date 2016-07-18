@@ -159,7 +159,6 @@ platform :ios do
     bump_version(options)
     set_app_identifier
 
-    UI.command_output(ENV)
     # Build the App
     # build_app
 
