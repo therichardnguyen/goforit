@@ -184,7 +184,7 @@ platform :ios do
     set_github_release(
       commitish: git_branch,
       description: version_string,
-      name: build_name,
+      name: version_string,
       tag_name: version_string,
       upload_assets: [
         lane_context[:BACKUP_XCARCHIVE_FILE],
