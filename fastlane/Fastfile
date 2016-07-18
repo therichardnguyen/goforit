@@ -19,6 +19,14 @@ platform :ios do
     badge(shield: shield, dark: true, shield_no_resize: true)
   end
 
+  def backup_archive
+    build_artifacts_dir = "build_artifacts"
+    sh "mkdir -p #{build_artifacts_dir}"
+    backup_xcarchive(
+      destination: "./fastlane/#{build_artifacts_dir}"
+    )
+  end
+
   def load_keys
     begin
       import('keys')
@@ -161,29 +169,29 @@ platform :ios do
     build_app
 
     # # Upload the app
-    # deliver(
-    #   skip_screenshots: true,
-    #   skip_metadata: true,
-    #   force: true
-    # )
-    #
-    # Backup the .xcarchive
-    build_artifacts_dir = "build_artifacts"
-    sh "pwd"
-    sh "mkdir -p #{build_artifacts_dir}"
-    backup_xcarchive(
-      destination: "./fastlane/#{build_artifacts_dir}"
+    deliver(
+      skip_screenshots: true,
+      skip_metadata: true,
+      force: true
     )
+
+    # Backup the .xcarchive
+    backup_archive
 
     # Commit the version
     commit_version_bump(
       message: "Version bump to #{lane_context[:VERSION_NUMBER]} (#{lane_context[:BUILD_NUMBER]})"
     )
 
+    # Push to git remote
+    push_to_git_remote
+
     # Add a Github Release for this build
     set_github_release(
-      commitish: git_branch,
+      commitish: last_commit_hash,
       description: version_string,
+      is_draft: true,
+      is_prerelease: true,
       name: version_string,
       tag_name: version_string,
       upload_assets: [
