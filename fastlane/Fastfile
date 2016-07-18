@@ -188,7 +188,7 @@ platform :ios do
 
     # Add a Github Release for this build
     set_github_release(
-      commitish: last_commit_hash,
+      commitish: last_git_commit[:commit_hash],
       description: version_string,
       is_draft: true,
       is_prerelease: true,
