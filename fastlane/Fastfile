@@ -158,7 +158,7 @@ platform :ios do
     bump_version(options)
 
     # Build the App
-    # build_app
+    build_app
 
     # # Upload the app
     # deliver(
@@ -168,11 +168,11 @@ platform :ios do
     # )
     #
     # Backup the .xcarchive
-    build_artifacts_path = "build_artifacts"
+    build_artifacts_dir = "build_artifacts"
     sh "pwd"
-    sh "mkdir #{build_artifacts_path}"
+    sh "mkdir #{build_artifacts_dir}"
     backup_xcarchive(
-      destination: build_artifacts_path
+      destination: "./fastlane/#{build_artifacts_dir}"
     )
 
     # Commit the version
