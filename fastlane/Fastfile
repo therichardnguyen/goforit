@@ -168,7 +168,7 @@ platform :ios do
     # )
     #
     # Backup the .xcarchive
-    build_artifacts_path = "fastlane/build_artifacts"
+    build_artifacts_path = "build_artifacts"
     sh "pwd"
     sh "mkdir #{build_artifacts_path}"
     backup_xcarchive(
