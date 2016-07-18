@@ -163,8 +163,8 @@ platform :ios do
     # build_app
 
     # Create github release
-    UI.command_output("#{ENV}")
-    build_name = "v#{ENV['VERSION_NUMBER']}-b(#{ENV['BUILD_NUMBER']})"
+    UI.command_output("#{lane_context}")
+    build_name = "v#{lane_context['VERSION_NUMBER']}-b(#{lane_context['BUILD_NUMBER']})"
     set_github_release(
       name: build_name,
       tag_name: build_name,
