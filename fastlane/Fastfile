@@ -174,7 +174,7 @@ platform :ios do
 
     # Commit the version
     commit_version_bump(
-      message: "Version bump to #{new_version_number} (#{new_build_number})"
+      message: "Version bump to #{lane_context[:VERSION_NUMBER]} (#{lane_context[:BUILD_NUMBER]})"
     )
 
     set_github_release(
