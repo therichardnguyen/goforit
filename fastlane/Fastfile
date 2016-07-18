@@ -163,7 +163,7 @@ platform :ios do
     # build_app
 
     # Create github release
-    build_name = "v#{ENV[:VERSION_NUMBER]}-b(#{ENV[:BUILD_NUMBER]})"
+    build_name = "v#{ENV['VERSION_NUMBER']}-b(#{ENV['BUILD_NUMBER']})"
     set_github_release(
       name: build_name,
       tag_name: build_name,
