@@ -164,11 +164,12 @@ platform :ios do
     # build_app
 
     # Create github release
+    build_name = "v#{ENV[:VERSION_NUMBER]}-b(#{ENV[:BUILD_NUMBER]})"
     set_github_release(
-      name: "v#{new_version_number}-b(#{new_build_number})",
-      tag_name: "v#{new_version_number}-b(#{new_build_number})",
+      name: build_name,
+      tag_name: build_name,
       commitish: git_branch,
-      description: "v#{new_version_number}-b(#{new_build_number})"
+      description: build_name
     )
 
     # # Upload the app
