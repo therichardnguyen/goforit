@@ -5,6 +5,10 @@
 team_id '4YFW2PR745'
 itc_team_id '26150800'
 
+for_lane :app_store do
+  app_identifier 'com.therichardnguyen.Handoff'
+end
+
 for_lane :demo do
   app_identifier 'com.medisas.HandoffDemo'
 end
