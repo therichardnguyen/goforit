@@ -168,8 +168,10 @@ platform :ios do
     )
 
     # Backup the .xcarchive
+    build_artifacts_path = "./fastlane/build_artifacts"
+    sh "mkdir #{build_artifacts_path}"
     backup_xcarchive(
-      destination: './fastlane/build_artifacts/'
+      destination: build_artifacts_path
     )
 
     # Commit the version
@@ -177,6 +179,7 @@ platform :ios do
       message: "Version bump to #{lane_context[:VERSION_NUMBER]} (#{lane_context[:BUILD_NUMBER]})"
     )
 
+    # Add a Github Release for this build
     set_github_release(
       commitish: git_branch,
       description: version_string,
