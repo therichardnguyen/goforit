@@ -182,6 +182,10 @@ platform :ios do
       tag_name: build_name,
       commitish: git_branch,
       description: build_name,
+      upload_assets: [
+        lane_context[:BACKUP_XCARCHIVE_FILE],
+        'Handoff.ipa'
+      ]
     )
   end
 
