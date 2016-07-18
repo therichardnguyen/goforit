@@ -174,7 +174,7 @@ platform :ios do
 
     # Backup the .xcarchive
     backup_xcarchive(
-      destination: '.',
+      destination: '.'
     )
 
     set_github_release(
