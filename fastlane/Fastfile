@@ -166,10 +166,15 @@ platform :ios do
     build_name = "v#{lane_context[:VERSION_NUMBER]}-b(#{lane_context[:BUILD_NUMBER]})"
 
     # # Upload the app
-    deliver(
-      skip_screenshots: true,
-      skip_metadata: true,
-      force: true
+    # deliver(
+    #   skip_screenshots: true,
+    #   skip_metadata: true,
+    #   force: true
+    # )
+
+    # Backup the .xcarchive
+    backup_xcarchive(
+      destination: '.',
     )
 
     set_github_release(
