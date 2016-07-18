@@ -158,15 +158,15 @@ platform :ios do
     bump_version(options)
 
     # Build the App
-    build_app
+    # build_app
 
     # # Upload the app
-    deliver(
-      skip_screenshots: true,
-      skip_metadata: true,
-      force: true
-    )
-
+    # deliver(
+    #   skip_screenshots: true,
+    #   skip_metadata: true,
+    #   force: true
+    # )
+    #
     # Backup the .xcarchive
     build_artifacts_path = "fastlane/build_artifacts"
     sh "pwd"
