@@ -150,12 +150,11 @@ platform :ios do
 
     # Create github release
     set_github_release(
-    repository_name: "therichardnguyen/goforit",
-    api_token:"dd28dbce2d4d5c00bc9f4d5527e52aaa52fc26c6",
-    name: "Super New actions",
-    tag_name: "v1.22.0",
-    commitish: git_branch,
-    description: ""
+      repository_name: "therichardnguyen/goforit",
+      name: "v#{new_version_number}-b(#{new_build_number})",
+      tag_name: "v#{new_version_number}-b(#{new_build_number})",
+      commitish: git_branch,
+      description: "v#{new_version_number}-b(#{new_build_number})"
     )
   end
 
