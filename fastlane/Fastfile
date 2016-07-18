@@ -169,7 +169,7 @@ platform :ios do
 
     # Backup the .xcarchive
     backup_xcarchive(
-      destination: './build_artifacts/'
+      destination: './fastlane/build_artifacts/'
     )
 
     # Commit the version

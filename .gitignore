@@ -9,6 +9,7 @@ DerivedData
 fastlane/keys
 fastlane/profiles/
 fastlane/report.xml
+fastlane/build_artifacts/
 
 ## Various settings
 *.pbxuser
@@ -30,5 +31,3 @@ xcuserdata
 ## Obj-C/Swift specific
 *.hmap
 *.ipa
-
-fastlane/
