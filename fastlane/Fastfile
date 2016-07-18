@@ -141,21 +141,6 @@ platform :ios do
     commit_version_bump(
       message: "Version bump to #{new_version_number} (#{new_build_number})"
     )
-
-    # Add git tag
-    # UI.command_output(lane_context[SharedValues::LANE_NAME])
-    # add_git_tag(
-    #   tag: 'v#{new_version_number}-b#{new_build_number}'
-    # )
-
-    # Create github release
-    set_github_release(
-      repository_name: "therichardnguyen/goforit",
-      name: "v#{new_version_number}-b(#{new_build_number})",
-      tag_name: "v#{new_version_number}-b(#{new_build_number})",
-      commitish: git_branch,
-      description: "v#{new_version_number}-b(#{new_build_number})"
-    )
   end
 
   desc 'Submit a new build to the App Store'
@@ -165,7 +150,7 @@ platform :ios do
   lane :app_store do |options|
 
     # Make sure that the repository is clean
-    ensure_git_status_clean
+    # ensure_git_status_clean
 
     # Ask for the version number for this submission
     options[:version_number] = prompt_for_version_number unless options[:version_number]
@@ -174,6 +159,7 @@ platform :ios do
     bump_version(options)
     set_app_identifier
 
+    UI.command_output(ENV)
     # Build the App
     # build_app
     #
