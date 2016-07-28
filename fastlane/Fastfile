@@ -1,20 +1,17 @@
 fastlane_version '1.89.0'
 PROVISIONING_PROFILE_PATH = './fastlane/profiles'
-PLIST_PATH = 'Handoff/Info.plist'
+PLIST_PATH = 'Handoff/Handoff-Info.plist'
+ENVIRONMENT_PLIST_PATH = '../Handoff/Resources/Environments.plist'
 default_platform :ios
 
 platform :ios do
-
-  after_all do
-
-  end
 
   before_all do
     set_up_lane
   end
 
-  def apply_icon_mask_with_color(color)
-    shield = "Environment-#{lane_context[SharedValues::LANE_NAME].split(' ').last}-#{color}"
+  def apply_icon_mask_with_color(color, name)
+    shield = "Environment-#{name}"
     UI.command_output(shield)
     badge(shield: shield, dark: true, shield_no_resize: true)
   end
@@ -24,116 +21,6 @@ platform :ios do
     sh "mkdir -p #{build_artifacts_dir}"
     backup_xcarchive(
       destination: "./fastlane/#{build_artifacts_dir}"
-    )
-  end
-
-  def load_keys
-    begin
-      import('keys')
-    rescue => exception
-      UI.error('\'fastlane/keys\' file not found. To use this Fastfile:')
-      UI.error(' • $ cp fastlane/keys.template fastlane/keys')
-      UI.error(' • Fill in the values')
-      raise exception
-    end
-  end
-
-  def current_version_number
-    get_info_plist_value(
-      path: PLIST_PATH,
-      key: 'CFBundleShortVersionString'
-    )
-  end
-
-  def current_build_number
-    get_build_number
-  end
-
-  def set_up_lane
-    load_keys
-    ENV['FASTLANE_ITC_TEAM_ID'] = CredentialsManager::AppfileConfig.try_fetch_value(:itc_team_id)
-  end
-
-  def set_app_identifier
-    app_identifier = CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier)
-    UI.command_output(app_identifier)
-    update_app_identifier(
-      xcodeproj: 'Handoff.xcodeproj',
-      plist_path: PLIST_PATH,
-      app_identifier: app_identifier
-    )
-    UI.command_output(app_identifier)
-  end
-
-  def unapply_icon_mask
-    reset_git_repo(
-      force: true,
-      files: ['./Handoff/Images.xcassets/AppIcon.appiconset']
-    )
-  end
-
-  def version_string
-    "v#{lane_context[:VERSION_NUMBER]}-b(#{lane_context[:BUILD_NUMBER]})"
-  end
-
-  def reset_xcodeproj
-    reset_git_repo(
-      force: true,
-      files: ['Handoff.xcodeproj/project.pbxproj']
-    )
-  end
-
-  def prompt_for_version_number
-    current_version_number = get_version_number
-    prompt(
-      text: "What version should this build be? Current is #{current_version_number}",
-      ci_input: current_version_number
-    )
-  end
-
-  def testflight_delivery(**options)
-    raise "Need a color set for TestFlight builds." unless options[:color]
-
-    ensure_git_status_clean
-
-    # Ask for the version number for this submission
-    options[:version_number] = prompt_for_version_number unless options[:version_number]
-
-    # Update the project info
-    version_number = options[:version_number]
-    bump_version(version_number: version_number)
-    set_app_identifier
-    apply_icon_mask_with_color(options[:color])
-
-    # Build the app
-    build_app
-
-    # Upload to TestFlight and deliver to internal testers
-    pilot
-  end
-
-  desc 'Build and sign the Medisas app'
-  desc ''
-  desc 'This will do the following: '
-  desc ' • Set the appropriate bundle identifier'
-  desc ' • Make sure the provisioning profiles are up to date and download the latest one'
-  desc ' • Bump the build number for the app version'
-  desc ' • Build and sign the app'
-  desc ''
-  desc 'This will **not** get the necessary signing certificates. Acquire these from a Medisas engineer.'
-  def build_app(**options)
-    app_identifier = CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier)
-
-    # Get the provisioning profiles
-    sigh(
-      output_path: PROVISIONING_PROFILE_PATH,
-      app_identifier: app_identifier
-    )
-
-    # Build the project
-    gym(
-      scheme: 'Development',
-      silent: true
     )
   end
 
@@ -150,6 +37,138 @@ platform :ios do
     new_build_number = increment_build_number
   end
 
+  def current_build_number
+    get_build_number
+  end
+
+  def current_version_number
+    get_info_plist_value(
+      path: PLIST_PATH,
+      key: 'CFBundleShortVersionString'
+    )
+  end
+
+  def load_environment_keys(name)
+    begin
+      import(name)
+    rescue => exception
+      UI.error('\'fastlane/#{name}\' file not found. To use this Fastfile:')
+      UI.error(' • $ cp fastlane/config.template fastlane/#{name}')
+      UI.error(' • Fill in the values')
+      raise exception
+    end
+  end
+
+  def load_keys
+    begin
+      import('keys')
+    rescue => exception
+      UI.error('\'fastlane/keys\' file not found. To use this Fastfile:')
+      UI.error(' • $ cp fastlane/keys.template fastlane/keys')
+      UI.error(' • Fill in the values')
+      raise exception
+    end
+  end
+
+  def plistbuddy(plist_path, command)
+    sh "pwd"
+    sh "/usr/libexec/PlistBuddy -c \"#{command}\" #{plist_path}"
+  end
+
+  def prompt_for_version_number
+    current_version_number = get_version_number
+    prompt(
+      text: "What version should this build be? Current is #{current_version_number}",
+      ci_input: current_version_number
+    )
+  end
+
+  def reset_xcodeproj
+    reset_git_repo(
+      force: true,
+      files: ['Handoff.xcodeproj/project.pbxproj']
+    )
+  end
+
+  def set_app_identifier(identifier=nil)
+    app_identifier = identifier
+    update_app_identifier(
+      xcodeproj: 'Handoff.xcodeproj',
+      plist_path: PLIST_PATH,
+      app_identifier: app_identifier
+    )
+    UI.command_output(app_identifier)
+  end
+
+  def set_up_environment_config(config_name)
+    plistbuddy(ENVIRONMENT_PLIST_PATH, "Delete 0") # Deleted the only element in the environments array
+    plistbuddy(ENVIRONMENT_PLIST_PATH, "Add 0 dict") # Create a new dictionary
+    plistbuddy(ENVIRONMENT_PLIST_PATH, "Merge #{config_name} 0") # Merge our dictionary
+
+    sh "cat #{ENVIRONMENT_PLIST_PATH}"
+  end
+
+  def set_up_lane
+    load_keys
+    ENV['FASTLANE_ITC_TEAM_ID'] = CredentialsManager::AppfileConfig.try_fetch_value(:itc_team_id)
+  end
+
+  def testflight_build_and_delivery(**options)
+    raise "Need a color set for TestFlight builds." unless options[:color]
+
+    apply_icon_mask_with_color(options[:color], options[:name])
+
+    # Set the App Identifier
+    set_app_identifier(options[:app_identifier])
+
+    # Build the app
+    build_app(
+      app_identifier: options[:app_identifier]
+    )
+
+    # Upload to TestFlight and deliver to internal testers
+    pilot(
+      skip_waiting_for_build_processing: true
+    )
+  end
+
+  def unapply_icon_mask
+    reset_git_repo(
+      force: true,
+      files: ['./Handoff/Images.xcassets/AppIcon.appiconset']
+    )
+  end
+
+  def version_string
+    "v#{lane_context[:VERSION_NUMBER]}-b(#{lane_context[:BUILD_NUMBER]})"
+  end
+
+  desc 'Build and sign the Medisas app'
+  desc ''
+  desc 'This will do the following: '
+  desc ' • Set the appropriate bundle identifier'
+  desc ' • Make sure the provisioning profiles are up to date and download the latest one'
+  desc ' • Bump the build number for the app version'
+  desc ' • Build and sign the app'
+  desc ''
+  desc 'This will **not** get the necessary signing certificates. Acquire these from a Medisas engineer.'
+  def build_app(**options)
+    app_identifier = options[:app_identifier]
+    app_identifier =  CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier) unless app_identifier
+
+    # Get the provisioning profiles
+    sigh(
+      output_path: PROVISIONING_PROFILE_PATH,
+      app_identifier: app_identifier
+    )
+
+    # Build the project
+    gym(
+      scheme: 'Development',
+      silent: true
+    )
+  end
+
   desc 'Submit a new build to the App Store'
   desc ''
   desc 'Arguments:'
@@ -157,10 +176,17 @@ platform :ios do
   lane :app_store do |options|
 
     # Make sure that the repository is clean
-    # ensure_git_status_clean
+    ensure_git_status_clean
+
+    # Make sure that we're on master
+    ensure_git_branch(
+      branch: 'master'
+    )
 
     # Ask for the version number for this submission
     options[:version_number] = prompt_for_version_number unless options[:version_number]
+
+    # set_up_environment_config('app_configs/production.plist')
 
     # Update the project info
     bump_version(options)
@@ -190,7 +216,6 @@ platform :ios do
     set_github_release(
       commitish: last_git_commit[:commit_hash],
       description: version_string,
-      is_draft: true,
       is_prerelease: true,
       name: version_string,
       tag_name: version_string,
@@ -199,25 +224,50 @@ platform :ios do
         'Handoff.ipa'
       ]
     )
+
+    # Notify
+    notify("App Store lane complete")
   end
 
-  desc 'Submit a new Demo build to \'s TestFlight'
+  desc 'Submit new builds to \'s TestFlight'
   desc ''
   desc 'Arguments:'
   desc ' • version_number - The version number that you\'d like to use for this build'
-  lane :demo do |options|
-    options[:color] = 'blue'
-    testflight_delivery(options)
+  lane :testflight do |options|
+
+    # Make sure that the repository is clean
+    # ensure_git_status_clean
+
+    # Ask for the version number for this submission
+    options[:version_number] = prompt_for_version_number unless options[:version_number]
+
+    # Update the project info
+    # bump_version(options)
+
+    # Build and deliver
+    testflight_play
+    testflight_demo
   end
 
-  desc 'Submit a new Play build to \'s TestFlight'
-  desc ''
-  desc 'Arguments:'
-  desc ' • version_number - The version number that you\'d like to use for this build'
-  lane :play do |options|
-    testflight_delivery(
+  private_lane :testflight_play do |options|
+
+    set_up_environment_config('app_configs/play.plist')
+
+    testflight_build_and_delivery(
+      app_identifier: 'com.medisas.HandoffPlay',
       color: 'orange',
-      version_number: options[:version_number],
+      name: 'Play'
+    )
+  end
+
+  private_lane :testflight_demo do |options|
+
+    # set_up_environment_config('app_configs/demo.plist')
+
+    testflight_build_and_delivery(
+      app_identifier: 'com.medisas.HandoffDemo',
+      color: 'blue',
+      name: 'Demo'
     )
   end
 
