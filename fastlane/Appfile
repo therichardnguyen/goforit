@@ -9,10 +9,10 @@ for_lane :app_store do
   app_identifier 'com.therichardnguyen.Handoff'
 end
 
-for_lane :demo do
+for_lane :testflight_demo do
   app_identifier 'com.medisas.HandoffDemo'
 end
 
-for_lane :play do
+for_lane :testflight_play do
   app_identifier 'com.medisas.HandoffPlay'
 end
